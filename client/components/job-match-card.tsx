@@ -14,6 +14,7 @@ interface JobMatchCardProps {
     salary: string
     skills: string[]
     missingSkills: string[]
+    url?: string
   }
   userSkills: string[]
 }
@@ -24,7 +25,7 @@ export default function JobMatchCard({ job, userSkills }: JobMatchCardProps) {
   const missingSkills = job.missingSkills || []
 
   return (
-    <Card>
+    <Card className="hover:shadow-lg transition-shadow">
       <CardContent className="p-6">
         <div className="flex flex-col md:flex-row justify-between gap-4">
           <div className="flex-1">
@@ -46,7 +47,11 @@ export default function JobMatchCard({ job, userSkills }: JobMatchCardProps) {
                 <span>Match Percentage</span>
                 <span>{job.matchPercentage}%</span>
               </div>
-              <Progress value={job.matchPercentage} className="h-2" />
+              <Progress 
+                value={job.matchPercentage} 
+                className="h-2"
+                indicatorClassName={job.matchPercentage >= 85 ? "bg-green-600" : ""}
+              />
             </div>
 
             <div className="text-sm text-gray-600 mb-4">
@@ -81,7 +86,13 @@ export default function JobMatchCard({ job, userSkills }: JobMatchCardProps) {
           </div>
 
           <div className="flex flex-col justify-end mt-4 md:mt-0">
-            <Button className="w-full">Apply Now</Button>
+            {job.url ? (
+              <a href={job.url} target="_blank" rel="noopener noreferrer">
+                <Button className="w-full">Apply Now</Button>
+              </a>
+            ) : (
+              <Button className="w-full">Apply Now</Button>
+            )}
           </div>
         </div>
       </CardContent>

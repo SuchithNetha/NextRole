@@ -3,71 +3,55 @@
 import { useState } from "react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter } from "@/components/ui/card"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Badge } from "@/components/ui/badge"
 
-interface RoadmapStep {
-  title: string
-  description: string
-  skills: string[]
-  timeframe: string
-}
-
-// Mock data for roadmap steps
-const mockSteps: Record<number, RoadmapStep[]> = {
-  1: [
-    {
-      title: "Junior Developer",
-      description: "Build a foundation in software development with hands-on coding experience.",
-      skills: ["HTML", "CSS", "JavaScript", "Git", "Basic Algorithms"],
-      timeframe: "1-2 years",
-    },
-    {
-      title: "Mid-level Developer",
-      description: "Expand your technical skills and take on more complex projects.",
-      skills: ["React/Angular/Vue", "Node.js", "SQL/NoSQL", "Testing", "CI/CD"],
-      timeframe: "2-3 years",
-    },
-    {
-      title: "Senior Developer",
-      description: "Lead development efforts and mentor junior team members.",
-      skills: ["System Design", "Architecture Patterns", "Performance Optimization", "Team Leadership"],
-      timeframe: "3-5 years",
-    },
-    {
-      title: "Tech Lead",
-      description: "Guide technical direction and make key architectural decisions.",
-      skills: ["Project Planning", "Technical Documentation", "Cross-team Collaboration", "Stakeholder Management"],
-      timeframe: "5-8 years",
-    },
-    {
-      title: "Software Architect",
-      description: "Design and oversee implementation of complex software systems.",
-      skills: ["Enterprise Architecture", "Technology Strategy", "Scalability Planning", "Technical Vision"],
-      timeframe: "8+ years",
-    },
-  ],
-  // Add more roadmaps as needed
+interface CareerStage {
+  title: string;
+  description: string;
+  timeframe: string;
+  experienceLevel: string;
+  skills: string[];
 }
 
 interface RoadmapCardProps {
   roadmap: {
-    id: number
-    title: string
-    description: string
-    industry: string
-    experienceLevel: string
-    steps: number
-    image: string
+    id: number;
+    title: string;
+    description: string;
+    industry: string;
+    experienceLevel: string;
+    careerStages: CareerStage[];
+    image: string;
   }
+}
+
+interface RoadmapItem {
+  skill: string;
+  description: string;
+}
+
+interface RoadmapProps {
+  title: string;
+  beginner: RoadmapItem[];
+  intermediate: RoadmapItem[];
+  advanced: RoadmapItem[];
 }
 
 export default function RoadmapCard({ roadmap }: RoadmapCardProps) {
   const [expanded, setExpanded] = useState(false)
 
-  // Get steps for this roadmap or use an empty array if not found
-  const steps = mockSteps[roadmap.id] || []
+  // Filter career stages based on experience level
+  const filteredStages = roadmap.careerStages.filter(stage => {
+    if (roadmap.experienceLevel === "All Levels") return true;
+    if (roadmap.experienceLevel === "Beginner") return stage.experienceLevel === "Beginner";
+    if (roadmap.experienceLevel === "Intermediate") 
+      return ["Beginner", "Intermediate"].includes(stage.experienceLevel);
+    if (roadmap.experienceLevel === "Advanced")
+      return ["Intermediate", "Advanced"].includes(stage.experienceLevel);
+    return true;
+  });
 
   return (
     <Card className="overflow-hidden">
@@ -77,12 +61,14 @@ export default function RoadmapCard({ roadmap }: RoadmapCardProps) {
       <CardContent className="pt-6">
         <div className="flex justify-between items-start mb-2">
           <h3 className="text-xl font-semibold">{roadmap.title}</h3>
-          <Badge variant="outline">{roadmap.industry}</Badge>
+          <div className="flex gap-2">
+            <Badge variant="outline">{roadmap.industry}</Badge>
+            <Badge variant="secondary">{roadmap.experienceLevel}</Badge>
+          </div>
         </div>
         <p className="text-gray-600 mb-4">{roadmap.description}</p>
         <div className="flex justify-between text-sm text-gray-500">
-          <span>{roadmap.steps} career stages</span>
-          <span>{roadmap.experienceLevel}</span>
+          <span>{filteredStages.length} career stages</span>
         </div>
       </CardContent>
       <CardFooter className="flex justify-between pt-0">
@@ -94,21 +80,21 @@ export default function RoadmapCard({ roadmap }: RoadmapCardProps) {
       {expanded && (
         <div className="px-6 pb-6">
           <Accordion type="single" collapsible className="w-full">
-            {steps.map((step, index) => (
-              <AccordionItem key={index} value={`step-${index}`}>
+            {filteredStages.map((stage, index) => (
+              <AccordionItem key={index} value={`stage-${index}`}>
                 <AccordionTrigger className="text-left">
                   <div>
-                    <span className="font-medium">{step.title}</span>
-                    <span className="text-sm text-gray-500 ml-2">({step.timeframe})</span>
+                    <span className="font-medium">{stage.title}</span>
+                    <span className="text-sm text-gray-500 ml-2">({stage.timeframe})</span>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent>
-                  <p className="mb-3 text-gray-600">{step.description}</p>
+                  <p className="mb-3 text-gray-600">{stage.description}</p>
                   <div className="mb-2">
                     <span className="text-sm font-medium">Key Skills:</span>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {step.skills.map((skill, skillIndex) => (
+                    {stage.skills.map((skill, skillIndex) => (
                       <Badge key={skillIndex} variant="secondary">
                         {skill}
                       </Badge>
@@ -120,6 +106,55 @@ export default function RoadmapCard({ roadmap }: RoadmapCardProps) {
           </Accordion>
         </div>
       )}
+    </Card>
+  )
+}
+
+export function CareerRoadmapCard({ title, beginner, intermediate, advanced }: RoadmapProps) {
+  return (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle>{title} Roadmap</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-lg font-semibold mb-3">Beginner Level</h3>
+            <div className="space-y-2">
+              {beginner.map((item, index) => (
+                <div key={index} className="p-3 bg-gray-50 rounded-lg">
+                  <h4 className="font-medium">{item.skill}</h4>
+                  <p className="text-sm text-gray-600">{item.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-semibold mb-3">Intermediate Level</h3>
+            <div className="space-y-2">
+              {intermediate.map((item, index) => (
+                <div key={index} className="p-3 bg-blue-50 rounded-lg">
+                  <h4 className="font-medium">{item.skill}</h4>
+                  <p className="text-sm text-gray-600">{item.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-semibold mb-3">Advanced Level</h3>
+            <div className="space-y-2">
+              {advanced.map((item, index) => (
+                <div key={index} className="p-3 bg-purple-50 rounded-lg">
+                  <h4 className="font-medium">{item.skill}</h4>
+                  <p className="text-sm text-gray-600">{item.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </CardContent>
     </Card>
   )
 }

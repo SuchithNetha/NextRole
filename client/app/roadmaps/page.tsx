@@ -1,85 +1,73 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import RoadmapCard from "@/components/roadmap-card"
 import ChatWidget from "@/components/chat-widget"
+import Header from "@/components/header"
 import Link from "next/link"
 
-// Mock data for roadmaps
-const roadmaps = [
-  {
-    id: 1,
-    title: "Software Development",
-    description: "From junior developer to software architect",
-    industry: "Technology",
-    experienceLevel: "All Levels",
-    steps: 5,
-    image: "/placeholder.svg?height=200&width=400",
-  },
-  {
-    id: 2,
-    title: "Data Science",
-    description: "From data analyst to chief data officer",
-    industry: "Technology",
-    experienceLevel: "Intermediate",
-    steps: 4,
-    image: "/placeholder.svg?height=200&width=400",
-  },
-  {
-    id: 3,
-    title: "Digital Marketing",
-    description: "From marketing assistant to marketing director",
-    industry: "Marketing",
-    experienceLevel: "Beginner",
-    steps: 6,
-    image: "/placeholder.svg?height=200&width=400",
-  },
-  {
-    id: 4,
-    title: "UX/UI Design",
-    description: "From junior designer to design lead",
-    industry: "Design",
-    experienceLevel: "All Levels",
-    steps: 5,
-    image: "/placeholder.svg?height=200&width=400",
-  },
-  {
-    id: 5,
-    title: "Project Management",
-    description: "From project coordinator to program director",
-    industry: "Business",
-    experienceLevel: "Intermediate",
-    steps: 4,
-    image: "/placeholder.svg?height=200&width=400",
-  },
-  {
-    id: 6,
-    title: "Financial Analysis",
-    description: "From financial analyst to CFO",
-    industry: "Finance",
-    experienceLevel: "Advanced",
-    steps: 7,
-    image: "/placeholder.svg?height=200&width=400",
-  },
-]
+interface CareerStage {
+  title: string;
+  description: string;
+  timeframe: string;
+  experienceLevel: string;
+  skills: string[];
+}
+
+interface Roadmap {
+  id: number;
+  title: string;
+  description: string;
+  industry: string;
+  experienceLevel: string;
+  careerStages: CareerStage[];
+  image: string;
+}
 
 export default function RoadmapsPage() {
+  const [roadmaps, setRoadmaps] = useState<Roadmap[]>([]);
+  const [selectedIndustry, setSelectedIndustry] = useState("all");
+  const [selectedLevel, setSelectedLevel] = useState("all");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRoadmaps = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/skills/roadmaps');
+        const data = await response.json();
+        
+        // Transform the data into the format we need
+        const formattedRoadmaps = Object.entries(data.skillHierarchy).map(([title, category]: [string, any], index) => ({
+          id: index + 1,
+          title,
+          description: `Career progression for ${title}`,
+          industry: category.industry,
+          experienceLevel: category.experienceLevel,
+          careerStages: category.careerStages || [],
+          image: "/placeholder.svg?height=200&width=400",
+        }));
+
+        setRoadmaps(formattedRoadmaps);
+      } catch (error) {
+        console.error('Error fetching roadmaps:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRoadmaps();
+  }, []);
+
+  const filteredRoadmaps = roadmaps.filter(roadmap => {
+    const industryMatch = selectedIndustry === "all" || roadmap.industry.toLowerCase() === selectedIndustry;
+    const levelMatch = selectedLevel === "all" || roadmap.experienceLevel === selectedLevel;
+    return industryMatch && levelMatch;
+  });
+
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Career Path Navigator</h1>
-          <nav className="hidden md:flex space-x-4">
-            <Link href="/" className="font-medium">
-              Home
-            </Link>
-            <Link href="/roadmaps" className="font-medium">
-              Roadmaps
-            </Link>
-            <Link href="/skills-matching" className="font-medium">
-              Skills Matching
-            </Link>
-          </nav>
-        </div>
-      </header>
+      <Header />
 
       <main className="flex-1 container mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
@@ -89,7 +77,7 @@ export default function RoadmapsPage() {
           </div>
           <div className="mt-4 md:mt-0 flex flex-col sm:flex-row gap-4">
             <div className="w-full sm:w-auto">
-              <Select>
+              <Select value={selectedIndustry} onValueChange={setSelectedIndustry}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Industry" />
                 </SelectTrigger>
@@ -104,26 +92,30 @@ export default function RoadmapsPage() {
               </Select>
             </div>
             <div className="w-full sm:w-auto">
-              <Select>
+              <Select value={selectedLevel} onValueChange={setSelectedLevel}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Experience Level" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Levels</SelectItem>
-                  <SelectItem value="beginner">Beginner</SelectItem>
-                  <SelectItem value="intermediate">Intermediate</SelectItem>
-                  <SelectItem value="advanced">Advanced</SelectItem>
+                  <SelectItem value="Beginner">Beginner</SelectItem>
+                  <SelectItem value="Intermediate">Intermediate</SelectItem>
+                  <SelectItem value="Advanced">Advanced</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {roadmaps.map((roadmap) => (
-            <RoadmapCard key={roadmap.id} roadmap={roadmap} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="text-center py-8">Loading roadmaps...</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredRoadmaps.map((roadmap) => (
+              <RoadmapCard key={roadmap.id} roadmap={roadmap} />
+            ))}
+          </div>
+        )}
       </main>
 
       <footer className="bg-gray-900 text-white py-8">
@@ -145,7 +137,6 @@ export default function RoadmapsPage() {
         </div>
       </footer>
 
-      {/* Chat Widget */}
       <ChatWidget />
     </div>
   )

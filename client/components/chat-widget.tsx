@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { MessageCircle, X, Save, Send, ChevronUp } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -89,102 +89,60 @@ export default function ChatWidget() {
     alert("Chat insights saved! In a real implementation, this would save the conversation to your account.")
   }
 
+  if (!isOpen) {
+    return (
+      <Button
+        onClick={() => setIsOpen(true)}
+        className="fixed bottom-4 right-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full p-4 shadow-lg"
+      >
+        <MessageCircle className="h-6 w-6" />
+      </Button>
+    )
+  }
+
   return (
     <>
-      {/* Chat toggle button */}
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-50 p-4 rounded-full bg-primary text-white shadow-lg hover:bg-primary/90 transition-all"
-        aria-label={isOpen ? "Close chat" : "Open chat"}
-      >
-        {isOpen ? <X size={24} /> : <MessageCircle size={24} />}
-      </button>
-
-      {/* Chat panel */}
-      <div
-        className={cn(
-          "fixed z-40 bottom-0 right-0 w-full sm:w-96 transition-all duration-300 ease-in-out",
-          isOpen ? "translate-y-0 opacity-100" : "translate-y-full opacity-0 pointer-events-none",
-        )}
-      >
-        <Card className="h-[80vh] sm:h-[600px] flex flex-col rounded-t-lg rounded-b-none sm:rounded-b-lg sm:m-6 shadow-xl">
-          <CardHeader className="p-4 border-b flex flex-row justify-between items-center">
-            <div>
-              <h3 className="font-semibold">Career Assistant</h3>
-              <p className="text-sm text-gray-500">Ask me anything about your career</p>
+      <Card className="fixed bottom-4 right-4 w-96 shadow-lg">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-lg">Chat Assistant</CardTitle>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsOpen(false)}
+            className="absolute right-2 top-2"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="h-64 overflow-y-auto space-y-2">
+              {messages.map((msg, index) => (
+                <div
+                  key={index}
+                  className={`p-2 rounded-lg ${
+                    msg.sender === "user" ? "bg-blue-100 ml-auto" : "bg-gray-100"
+                  } max-w-[80%] ${msg.sender === "user" ? "ml-auto" : "mr-auto"}`}
+                >
+                  {msg.content}
+                </div>
+              ))}
             </div>
             <div className="flex gap-2">
-              <Button variant="ghost" size="icon" onClick={handleSaveChat} title="Save chat insights">
-                <Save size={18} />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsOpen(false)}
-                className="sm:hidden"
-                title="Minimize chat"
-              >
-                <ChevronUp size={18} />
-              </Button>
-            </div>
-          </CardHeader>
-
-          <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
-            {messages.map((message) => (
-              <div key={message.id} className={cn("flex", message.sender === "user" ? "justify-end" : "justify-start")}>
-                <div
-                  className={cn(
-                    "max-w-[80%] rounded-lg p-3",
-                    message.sender === "user" ? "bg-primary text-primary-foreground" : "bg-muted",
-                  )}
-                >
-                  {message.content}
-                </div>
-              </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </CardContent>
-
-          {messages.length === 1 && (
-            <div className="px-4 pb-2">
-              <p className="text-sm text-gray-500 mb-2">Suggested questions:</p>
-              <div className="flex flex-wrap gap-2">
-                {suggestionButtons.map((suggestion, index) => (
-                  <Button
-                    key={index}
-                    variant="outline"
-                    size="sm"
-                    className="text-xs"
-                    onClick={() => handleSuggestionClick(suggestion)}
-                  >
-                    {suggestion}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          <CardFooter className="p-4 pt-2">
-            <form
-              className="flex w-full gap-2"
-              onSubmit={(e) => {
-                e.preventDefault()
-                handleSendMessage()
-              }}
-            >
               <Input
-                placeholder="Type your message..."
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
+                placeholder="Type your message..."
+                onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
                 className="flex-1"
               />
-              <Button type="submit" size="icon">
-                <Send size={18} />
+              <Button onClick={handleSendMessage} className="bg-blue-600 hover:bg-blue-700">
+                Send
               </Button>
-            </form>
-          </CardFooter>
-        </Card>
-      </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </>
   )
 }

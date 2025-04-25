@@ -1,42 +1,71 @@
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import ChatWidget from "@/components/chat-widget"
+'use client';
 
-export default function HomePage() {
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import ChatWidget from "@/components/chat-widget"
+import Header from "@/components/header"
+import Link from "next/link"
+
+export default function Home() {
+  const router = useRouter();
+
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="border-b">
+      <header className="bg-white shadow-sm">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Career Path Navigator</h1>
-          <nav className="hidden md:flex space-x-4">
-            <Link href="/" className="font-medium">
-              Home
-            </Link>
-            <Link href="/roadmaps" className="font-medium">
-              Roadmaps
-            </Link>
-            <Link href="/skills-matching" className="font-medium">
-              Skills Matching
-            </Link>
-          </nav>
+          <h1 className="text-2xl font-bold">NextRole</h1>
+          <Button 
+            onClick={() => router.push('/auth')}
+            variant="outline"
+          >
+            Login / Sign Up
+          </Button>
         </div>
       </header>
 
       <main className="flex-1">
         {/* Hero Section */}
         <section className="container mx-auto px-4 py-20 md:py-32 flex flex-col items-center text-center">
-          <h2 className="text-4xl md:text-6xl font-bold mb-6">Navigate Your Career Journey</h2>
+          <h2 className="text-4xl md:text-6xl font-bold mb-6">Welcome to NextRole</h2>
           <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mb-12">
-            Discover personalized career roadmaps and find jobs that match your skills. Let us guide you to your next
-            professional milestone.
+            Your career path navigator for finding the perfect job matches based on your skills.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Button asChild size="lg" className="text-lg px-8 py-6">
-              <Link href="/roadmaps">Explore Roadmaps</Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="text-lg px-8 py-6">
-              <Link href="/skills-matching">Find Matching Jobs</Link>
-            </Button>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            <Card>
+              <CardHeader>
+                <CardTitle>Skills Matching</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="mb-4">
+                  Find job matches based on your skills and see what you need to learn next.
+                </p>
+                <Button 
+                  onClick={() => router.push('/skills-matching')}
+                  className="w-full"
+                >
+                  Match Skills
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Career Roadmaps</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="mb-4">
+                  Explore career paths and create your personalized learning roadmap.
+                </p>
+                <Button 
+                  onClick={() => router.push('/roadmaps')}
+                  className="w-full"
+                >
+                  View Roadmaps
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </section>
 
@@ -71,7 +100,7 @@ export default function HomePage() {
       <footer className="bg-gray-900 text-white py-8">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <p>© 2024 Career Path Navigator. All rights reserved.</p>
+            <p>© 2024 NextRole. All rights reserved.</p>
             <div className="flex space-x-4 mt-4 md:mt-0">
               <Link href="/about" className="hover:underline">
                 About
@@ -90,5 +119,5 @@ export default function HomePage() {
       {/* Chat Widget */}
       <ChatWidget />
     </div>
-  )
+  );
 }
